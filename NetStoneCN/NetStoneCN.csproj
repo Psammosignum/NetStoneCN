@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <PackageId>NetStoneCN</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
     <Description>Cookie-based api for Final Fantasy XIV Rising Stones character data.</Description>
     <Authors>NetStoneCN Contributors</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -19,4 +19,7 @@
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+  <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
 </Project>

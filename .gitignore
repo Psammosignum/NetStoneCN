@@ -5,3 +5,4 @@
 *.suo
 *.nupkg
 TestResults/
+/NetStoneCN/NetStoneCN.csproj

@@ -22,13 +22,13 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: dotnet restore .\NetStoneCN.sln
+        run: dotnet restore ./NetStoneCN.sln
 
       - name: Build
-        run: dotnet build .\NetStoneCN.sln --configuration Release --no-restore
+        run: dotnet build ./NetStoneCN.sln --configuration Release --no-restore
 
       - name: Pack NuGet package
-        run: dotnet pack .\NetStoneCN\NetStoneCN.csproj --configuration Release --no-restore --output .\artifacts
+        run: dotnet pack ./NetStoneCN/NetStoneCN.csproj --configuration Release --no-restore --output ./artifacts
 
       - name: Upload NuGet package
         uses: actions/upload-artifact@v4

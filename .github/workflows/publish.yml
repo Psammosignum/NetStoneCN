@@ -1,0 +1,40 @@
+name: Build and publish to NuGet.org
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ./NetStoneCN/NetStoneCN.csproj
+
+      - name: Build and pack
+        run: dotnet pack ./NetStoneCN/NetStoneCN.csproj --configuration Release --no-restore --output ./artifacts -p:PackageVersion=${GITHUB_REF_NAME#v}
+
+      - name: NuGet login (OIDC to temporary API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: Psamotisignum
+
+      - name: Push package to NuGet.org
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json

@@ -27,8 +27,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore ./NetStoneCN/NetStoneCN.csproj
 
-      - name: Build and pack
-        run: dotnet pack ./NetStoneCN/NetStoneCN.csproj --configuration Release --no-restore --output ./artifacts -p:PackageVersion=${GITHUB_REF_NAME#v}
+      - name: Build
+        run: dotnet build ./NetStoneCN/NetStoneCN.csproj --configuration Release --no-restore -p:PackageVersion=${GITHUB_REF_NAME#v} -p:GeneratePackageOnBuild=false
+
+      - name: Pack NuGet package
+        run: dotnet pack ./NetStoneCN/NetStoneCN.csproj --configuration Release --no-restore --no-build --output ./artifacts -p:PackageVersion=${GITHUB_REF_NAME#v}
 
       - name: NuGet login (OIDC to temporary API key)
         uses: NuGet/login@v1

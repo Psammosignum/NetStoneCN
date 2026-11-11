@@ -30,6 +30,15 @@ client.SetCookie(cookieHeader);
 
 `cookieHeader` 是浏览器请求头中的 Cookie 值，不含 `Cookie:` 前缀，格式为 `名称=值; 名称2=值2`。Cookie 是可复用的登录凭据，请从本机安全存储读取，不要硬编码到源码、提交到版本控制或写入日志。Cookie 过期后需重新登录并更新。
 
+默认情况下，客户端会使用库内置的 User-Agent。若服务端要求请求使用与登录浏览器相同的 User-Agent，可通过 `SetUA` 设置；此设置只影响该客户端后续发出的请求。传入 `null` 或空白字符串会恢复默认 User-Agent：
+
+```csharp
+client.SetUA(browserUserAgent);
+// 恢复库默认值：client.SetUA(null);
+```
+
+`browserUserAgent` 应是浏览器的完整 User-Agent 字符串（不含 `User-Agent:` 前缀）。例如使用 WebView2 时，可从 `CoreWebView2.Settings.UserAgent` 获取。User-Agent 与 Cookie 应来自同一登录会话对应的浏览器环境；不要把 Cookie 或其他认证信息写入日志。
+
 ## 按 UUID 获取角色资料
 
 ```csharp

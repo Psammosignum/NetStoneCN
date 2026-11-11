@@ -9,6 +9,7 @@ namespace NetStoneCN;
 /// <summary>用于获取石之家角色资料的客户端</summary>
 public sealed class RisingStonesClient : IDisposable
 {
+    private const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36";
     private const string UserInfoPath = $"{Constants.ApiBaseAddress}api/home/userInfo/getUserInfo";
     private const string BindUserInfoPath = $"{Constants.ApiBaseAddress}api/home/groupAndRole/getCharacterBindInfo?platform=2";
     private const string JobConfigListPath = $"{Constants.ApiBaseAddress}api/home/recruit/getJobConfigList";
@@ -17,6 +18,7 @@ public sealed class RisingStonesClient : IDisposable
     private readonly HttpClient client;
     private readonly bool ownsClient;
     private string cookieHeader = string.Empty;
+    private string userAgent = DefaultUserAgent;
     /// <summary>初始化</summary>
     public RisingStonesClient() : this(CreateHttpClient(), true) { }
 
@@ -29,6 +31,13 @@ public sealed class RisingStonesClient : IDisposable
         if (string.IsNullOrWhiteSpace(cookies))
             throw new ArgumentException("必须提供石之家 Cookie。", nameof(cookies));
         Volatile.Write(ref cookieHeader, cookies.Trim());
+    }
+
+    /// <summary>设置后续请求使用的 User-Agent；传入 null 或空白时恢复默认值</summary>
+    /// <param name="userAgent">请求使用的 User-Agent，null 或空白表示使用库的默认值</param>
+    public void SetUA(string? userAgent)
+    {
+        Volatile.Write(ref this.userAgent, string.IsNullOrWhiteSpace(userAgent) ? DefaultUserAgent : userAgent.Trim());
     }
 
     private RisingStonesClient(HttpClient httpClient, bool ownsClient)
@@ -116,7 +125,7 @@ public sealed class RisingStonesClient : IDisposable
         var cookies = Volatile.Read(ref cookieHeader);
         if (string.IsNullOrWhiteSpace(cookies))
             throw new InvalidOperationException("尚未设置石之家 Cookie，请先调用 SetCookie。");
-        using var request = InitRequest(requestUri, cookies);
+        using var request = InitRequest(requestUri, cookies, Volatile.Read(ref userAgent));
         using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException($"石之家返回 HTTP {(int)response.StatusCode}（{response.StatusCode}）。");
@@ -142,7 +151,7 @@ public sealed class RisingStonesClient : IDisposable
         return result.Data;
     }
 
-    private static HttpRequestMessage InitRequest(string targetUri, string cookies)
+    private static HttpRequestMessage InitRequest(string targetUri, string cookies, string userAgent)
     {
         if (cookies is null) throw new ArgumentNullException(nameof(cookies));
         var request = new HttpRequestMessage(HttpMethod.Get, targetUri)
@@ -154,8 +163,7 @@ public sealed class RisingStonesClient : IDisposable
         request.Headers.Accept.ParseAdd("application/json, text/plain, */*");
         request.Headers.Referrer = new Uri(Constants.WebBaseAddress);
         request.Headers.TryAddWithoutValidation("Origin", Constants.WebBaseAddress);
-        request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36");
-        request.Headers.TryAddWithoutValidation("Accept-Language", "zh-CN;q=0.9,zh;q=0.8");
+        request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
         return request;
     }
     private static HttpClient CreateHttpClient()

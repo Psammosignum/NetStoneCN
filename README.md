@@ -74,6 +74,27 @@ if (current is not null)
 
 `CurrentCharacter` 描述当前登录账号绑定的角色及接口提供的基础资料，例如角色名、大区、服务器、头像、简介、公开设置和角色详情。敏感字段不会由库额外请求或推导；数据是否存在也受接口及账号公开设置影响。模型定义见 `NetStoneCN/Model/CurrentCharacter.cs`。
 
+## 获取登录状态和简易账号信息
+
+`GetLoginInformation` 返回当前登录账号的简易信息，包括角色名、大区和服务器名称：
+
+```csharp
+var loginInfo = await client.GetLoginInformation();
+if (loginInfo is not null)
+{
+    Console.WriteLine($"{loginInfo.Name} - {loginInfo.DataCenterName}/{loginInfo.ServerName}");
+}
+```
+
+`IsLoggedIn` 用于检查当前 Cookie 是否能通过石之家登录状态接口验证，结果为 `true` 或 `false`：
+
+```csharp
+var isLoggedIn = await client.IsLoggedIn();
+Console.WriteLine(isLoggedIn ? "已登录" : "未登录");
+```
+
+两个方法都支持传入 `CancellationToken`。`LoginInformation` 模型定义见 `NetStoneCN/Model/LoginInformation.cs`。
+
 ## 获取职业与职能配置
 
 ```csharp

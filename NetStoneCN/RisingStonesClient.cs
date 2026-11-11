@@ -13,6 +13,7 @@ public sealed class RisingStonesClient : IDisposable
     private const string BindUserInfoPath = $"{Constants.ApiBaseAddress}api/home/groupAndRole/getCharacterBindInfo?platform=2";
     private const string JobConfigListPath = $"{Constants.ApiBaseAddress}api/home/recruit/getJobConfigList";
     private const string CharacterSearchPath = $"{Constants.ApiBaseAddress}api/common/search";
+    private const string LoginStateQueryPath = $"{Constants.ApiBaseAddress}api/home/GHome/isLogin";
     private readonly HttpClient client;
     private readonly bool ownsClient;
     private string cookieHeader = string.Empty;
@@ -49,7 +50,23 @@ public sealed class RisingStonesClient : IDisposable
         if (string.IsNullOrWhiteSpace(uuid)) throw new ArgumentException("必须提供角色 UUID。", nameof(uuid));
         return GetCharacterViaURL($"{UserInfoPath}?uuid={Uri.EscapeDataString(uuid.Trim())}", cancellationToken);
     }
+    ///<summary>检查登录状态</summary>
+    public async Task<bool> IsLoggedIn(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var loginquery = await GetDataViaURL<LoginInformation>(LoginStateQueryPath, cancellationToken);
+            return true;
+        }
+        catch (RisingStonesException ex) when (ex.ApiCode != 10000)
+        {
 
+            return false;
+        }
+    }
+    ///<summary>获取登陆状态和简易信息</summary>
+    public Task<LoginInformation?> GetLoginInformation(CancellationToken cancellationToken = default) =>
+        GetDataViaURL<LoginInformation>(LoginStateQueryPath, cancellationToken);
     /// <summary>获取当前登录账号绑定的角色资料</summary>
     public Task<CurrentCharacter?> GetCurrentCharacter(CancellationToken cancellationToken = default) =>
         GetDataViaURL<CurrentCharacter>(BindUserInfoPath, cancellationToken);
